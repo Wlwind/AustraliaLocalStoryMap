@@ -1,0 +1,11 @@
+@(stories: List[modules.Story])
+
+<ul>
+	@for(s <- stories){
+	<li>
+	<a href="@s.getUrl()">@s.getTitle()</a>
+		-@s.getStation():@s.getState():@s.getPlace() (@s.getLatitude(),
+		@s.getLongitude)
+	</li>
+	}
+</ul>

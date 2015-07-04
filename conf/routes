@@ -1,0 +1,19 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                           controllers.Application.index()
+
+GET		/map/:state/state			controllers.Application.mapByState(state: String)
+GET		/map/:year/year				controllers.Application.mapByYear(year: String)
+GET     /map/ballarat/photograph	controllers.Application.mapByBallaratPhotograph()
+
+GET		/stories/:year/year			controllers.Application.storiesByYear(year: String)
+GET		/stories/:state/state		controllers.Application.storiesByState(state: String)
+
+GET		/story/:id					controllers.Application.showStory(id: Long)
+
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

@@ -1,0 +1,164 @@
+@(stateCount: Map[String, Integer], yearCount: Map[String, Integer], ballaratCount: Map[String, Integer], showList: List[modules.Story] = null)
+
+@main{
+	    <!-- Fixed navbar -->
+	    <nav class="navbar navbar-default navbar-fixed-top">
+	      <div class="container-fluid">
+	        <div class="navbar-header">
+	          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+	            <span class="sr-only">Toggle navigation</span>
+	            <span class="icon-bar"></span>
+	            <span class="icon-bar"></span>
+	            <span class="icon-bar"></span>
+	          </button>
+	          <a class="navbar-brand" href="#"><img src="@routes.Assets.versioned("images/logo.png")" img="img-responsive"/></a>
+	        </div>
+	        <div id="navbar" class="navbar-collapse collapse">
+	          <ul class="nav navbar-nav">
+	            <li class="dropdown">
+	              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><img src="@routes.Assets.versioned("images/abc.png")" img="img-responsive"/>  ABC Local Stories <span class="caret"></span></a>
+	              <ul class="dropdown-menu">
+	              	@for((key, value)<-stateCount){
+					  <li><a href="/map/@key/state"><img src="@{routes.Assets.versioned("images/"+key+".png")}" width="20" height="20"/> @key (@value)</a></li>
+					}
+					<li role="separator" class="divider"></li>
+					@for((key, value)<-yearCount){
+					  <li><a href="/map/@key/year"><img src="@{routes.Assets.versioned("images/"+key+".png")}" width="20" height="20"/> @key (@value)</a></li>
+					}
+	              </ul>
+	            </li>
+	            <li class="dropdown">
+	              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><img src="@routes.Assets.versioned("images/ballarat.png")" img="img-responsive"/>  Ballarat's Historic Urban Landscape<span class="caret"></span></a>
+	              <ul class="dropdown-menu">
+	              	@for((key, value)<-ballaratCount){
+					  <li><a href="/map/ballarat/photograph">@key (@value)</a></li>
+					}
+	              </ul>
+	            </li>
+	          </ul>
+	          <ul class="nav navbar-nav navbar-right">
+	            <li><a href="#">GovHack 2015 BY Ye & Rice</a></li>
+	          </ul>
+	        </div><!--/.nav-collapse -->
+	      </div>
+	    </nav>
+	    
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-xs-7 col-lg-9 main-content">
+				<div id="map-canvas"></div>
+			</div>
+			<div class="col-xs-5 col-lg-3 main-content" id="storiesgallery">
+				@if(showList != null){
+		        	@for(s <- showList){
+		        		<div class="thumbnail">
+					      <a href="#" onclick="showStory(@s.getId())">
+					      <img class="lazy" data-original="@s.getPrimaryImage()" title='@s.getPrimaryImageCaption()' />
+					      </a>
+					      <div class="caption">
+					        <a href="#" onclick="showStory(@s.getId())">@s.getTitle()</a>
+					      </div>
+					    </div>
+		        	}
+	        	}else{
+	        		Discover Australian stories from here...
+	        	}
+			</div>
+		</div>
+    </div>
+    
+    <script type="text/javascript"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA6lvhmJsYI3C6UWuKzbyvdcaNm9D_bUqo">
+    </script>
+    <script type="text/javascript">
+    
+      var map;
+      var inforWindow;
+      
+      function clearOverlays() {
+    	  for (var i = 0; i < markersArray.length; i++ ) {
+    	    markersArray[i].setMap(null);
+    	  }
+    	  markersArray.length = 0;
+      }
+    
+      function showStory(sid){    	  
+    	  $.getJSON( "/story/"+sid, function( data ) {
+    		  var year = data.localDate.substring(0, 4);
+	    	  var marker = new google.maps.Marker({
+		            position: { lat: Number(data.latitude), lng: Number(data.longitude)},
+		            map: map,
+		            animation: google.maps.Animation.DROP,
+		            icon: getIconImage(year),
+		            title: data.title
+		        });
+		      
+		      map.setZoom(13);
+		      map.panTo(marker.position);
+		      
+		      google.maps.event.addListener(marker, 'click', function() {
+		        	if(inforWindow) inforWindow.close();
+		        	inforWindow = new google.maps.InfoWindow({
+			            content: '<div class="panel panel-default"><div class="panel-heading"><h3 class="panel-title"><a href="'+data.url+'" target="_blank">'+data.title+'</a></h3></div><div class="panel-body"><img src="'+data.primaryImage+'" title="'+data.primaryImageCaption+'" class="img-responsive img-thumbnail" style="width:100%"/>'+data.primaryImageCaption+' <a href="'+data.url+'" target="_blank">Read Story...</a><br><p class="bg-success">Location: '+data.state+'--'+data.place+'</p></div></div>'
+			        });
+		        	inforWindow.open(map, this);
+		      });
+		      
+		      google.maps.event.trigger(marker, 'click');
+    	  });
+      }
+      
+      function initialize() {
+    	
+        var mapOptions = {
+          center: { lat: -27.3052202, lng: 133.622037},
+          zoom: 5
+        };
+        map = new google.maps.Map(document.getElementById('map-canvas'),
+            mapOptions);
+        
+        @if(showList != null){
+        	@for(s <- showList){
+        		var year = '@s.getLocalDate()'.substring(0, 4);
+		        var marker = new google.maps.Marker({
+		            position: { lat: @s.getLatitude(), lng: @s.getLongitude()},
+		            map: map,
+		            animation: google.maps.Animation.DROP,
+		            icon: getIconImage(year),
+		            title: "@s.getTitle()"
+		        });
+		       
+		        google.maps.event.addListener(marker, 'click', function() {
+		        	if(inforWindow) inforWindow.close();
+		        	
+		        	inforWindow = new google.maps.InfoWindow({
+		        		content: '<div class="panel panel-default"><div class="panel-heading"><h3 class="panel-title"><a href="@s.getUrl()" target="_blank">@s.getTitle()</a></h3></div><div class="panel-body"><img src="@s.getPrimaryImage()" title="@s.getPrimaryImageCaption()" class="img-responsive img-thumbnail" style="width:100%"/>@s.getPrimaryImageCaption()  <a href="@s.getUrl()" target="_blank">Read Story...</a><br><p class="bg-success">Location: @s.getState()--@s.getPlace() (@s.getLocalDate().format("MM/dd/yyyy"))</p></div></div>'
+			        });
+		        	inforWindow.open(map, this);
+		        	map.setZoom(13);
+				    map.panTo(marker.position);
+		        });
+        	}
+        }
+      }
+      google.maps.event.addDomListener(window, 'load', initialize);
+      
+      function getIconImage(year){
+    	  var image = "@{routes.Assets.versioned("images/2009.png")}";
+    	  if(year==='2009'){
+  				image = "@{routes.Assets.versioned("images/2009.png")}";
+	  	  }else if(year==='2010'){
+	  			image = "@{routes.Assets.versioned("images/2010.png")}";
+	  	  }else if(year==='2011'){
+	  			image = "@{routes.Assets.versioned("images/2011.png")}";
+	  	  }else if(year==='2012'){
+	  			image = "@{routes.Assets.versioned("images/2012.png")}";
+	  	  }else if(year==='2013'){
+	  			image = "@{routes.Assets.versioned("images/2013.png")}";
+	  	  }else if(year==='2014'){
+	  			image = "@{routes.Assets.versioned("images/2014.png")}";
+	  	  }
+    	  return image;
+      }
+    </script>
+}
