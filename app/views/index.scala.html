@@ -1,4 +1,4 @@
-@(stateCount: Map[String, Integer], yearCount: Map[String, Integer], ballaratCount: Map[String, Integer], showList: List[modules.Story] = null)
+@(stateCount: Map[String, Integer], yearCount: Map[String, Integer], ballaratCount: Map[String, Integer], showList: List[models.Story] = null)
 
 @main{
 	    <!-- Fixed navbar -->
@@ -19,11 +19,11 @@
 	              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><img src="@routes.Assets.versioned("images/abc.png")" img="img-responsive"/>  ABC Local Stories <span class="caret"></span></a>
 	              <ul class="dropdown-menu">
 	              	@for((key, value)<-stateCount){
-					  <li><a href="/map/@key/state"><img src="@{routes.Assets.versioned("images/"+key+".png")}" width="20" height="20"/> @key (@value)</a></li>
+					  <li><a href="/map/@key/state"><img src="@{routes.Assets.versioned("images/"+key+".png")}" class="menu-icon"/> @key (@value)</a></li>
 					}
 					<li role="separator" class="divider"></li>
 					@for((key, value)<-yearCount){
-					  <li><a href="/map/@key/year"><img src="@{routes.Assets.versioned("images/"+key+".png")}" width="20" height="20"/> @key (@value)</a></li>
+					  <li><a href="/map/@key/year"><img src="@{routes.Assets.versioned("images/"+key+".png")}" class="menu-icon"/> @key (@value)</a></li>
 					}
 	              </ul>
 	            </li>
@@ -31,13 +31,25 @@
 	              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><img src="@routes.Assets.versioned("images/ballarat.png")" img="img-responsive"/>  Ballarat's Historic Urban Landscape<span class="caret"></span></a>
 	              <ul class="dropdown-menu">
 	              	@for((key, value)<-ballaratCount){
-					  <li><a href="/map/ballarat/photograph">@key (@value)</a></li>
+					  <li><a href="/map/ballarat/photograph"><img src="@{routes.Assets.versioned("images/bal.png")}" class="menu-icon"/> @key (@value)</a></li>
 					}
 	              </ul>
 	            </li>
+	            <form class="navbar-form navbar-right" action="/search" method="post">
+		           <input type="text" class="form-control" name="key" placeholder="Search...">
+		        </form>
 	          </ul>
 	          <ul class="nav navbar-nav navbar-right">
-	            <li><a href="#">GovHack 2015 BY Ye & Rice</a></li>
+	          	<li class="dropdown">
+	              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Open API <span class="caret"></span></a>
+	              <ul class="dropdown-menu">
+	              	<li><a href="/api/ACT/state"><span class="glyphicon glyphicon-asterisk" aria-hidden="true"></span> Story By State API</a></li>
+	              	<li><a href="/api/2009/year"><span class="glyphicon glyphicon-asterisk" aria-hidden="true"></span> Story By Year API</a></li>
+	              	<li><a href="/api/ballarat/photograph"><span class="glyphicon glyphicon-asterisk" aria-hidden="true"></span> Ballarat Landscape API</a></li>
+	                <li><a href="/api/ballarat/search"><span class="glyphicon glyphicon-asterisk" aria-hidden="true"></span> Search API</a></li>
+	              </ul>
+	            </li>
+	            <li><a href="#">GovHack 2015 BY Ye & Wen</a></li>
 	          </ul>
 	        </div><!--/.nav-collapse -->
 	      </div>
@@ -47,6 +59,7 @@
 		<div class="row">
 			<div class="col-xs-7 col-lg-9 main-content">
 				<div id="map-canvas"></div>
+				<img src="@{routes.Assets.versioned("images/map.png")}" class="map-in"/>
 			</div>
 			<div class="col-xs-5 col-lg-3 main-content" id="storiesgallery">
 				@if(showList != null){
@@ -89,7 +102,7 @@
 		            position: { lat: Number(data.latitude), lng: Number(data.longitude)},
 		            map: map,
 		            animation: google.maps.Animation.DROP,
-		            icon: getIconImage(year),
+		            icon: getIconImage(year, data.mediaRSS),
 		            title: data.title
 		        });
 		      
@@ -124,7 +137,7 @@
 		            position: { lat: @s.getLatitude(), lng: @s.getLongitude()},
 		            map: map,
 		            animation: google.maps.Animation.DROP,
-		            icon: getIconImage(year),
+		            icon: getIconImage(year, '@s.getMediaRSS()'),
 		            title: "@s.getTitle()"
 		        });
 		       
@@ -143,8 +156,12 @@
       }
       google.maps.event.addDomListener(window, 'load', initialize);
       
-      function getIconImage(year){
+      function getIconImage(year, type){
     	  var image = "@{routes.Assets.versioned("images/2009.png")}";
+    	  if(type === 'BPHOTO'){
+    		  image = "@{routes.Assets.versioned("images/bal.png")}";
+    		  return image;
+    	  }
     	  if(year==='2009'){
   				image = "@{routes.Assets.versioned("images/2009.png")}";
 	  	  }else if(year==='2010'){

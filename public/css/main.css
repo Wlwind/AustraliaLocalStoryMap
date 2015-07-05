@@ -22,3 +22,14 @@ body {
 	height: 900px;
 	overflow: scroll;
 }
+
+.map-in{
+   position: absolute;
+   bottom: 25px;
+   left: 15px;
+}
+
+.menu-icon{
+	width: 16px;
+	height: 20px;
+}

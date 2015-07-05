@@ -14,6 +14,12 @@ GET		/stories/:state/state		controllers.Application.storiesByState(state: String
 
 GET		/story/:id					controllers.Application.showStory(id: Long)
 
+POST	/search						controllers.Application.search()
+
+GET		/api/:state/state			controllers.Application.apiByState(state: String)
+GET		/api/:year/year				controllers.Application.apiByYear(year: String)
+GET     /api/ballarat/photograph	controllers.Application.apiByBallaratPhotograph()
+GET		/api/:key/search			controllers.Application.apiSearch(key: String)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

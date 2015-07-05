@@ -4,13 +4,13 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import modules.Story;
+import models.Story;
 import play.Logger;
+import play.data.Form;
 import play.db.DB;
 import play.db.jpa.JPA;
 import play.db.jpa.Transactional;
@@ -59,16 +59,46 @@ public class Application extends Controller {
 		return ok(Json.toJson(story));
 	}
 	
-	@Transactional
+	@Transactional(readOnly=true)
 	public Result mapByBallaratPhotograph(){
 		List<Story> resultList = JPA.em().createQuery("SELECT s FROM Story s where mediaRSS='BPHOTO'").getResultList();
 		Logger.info("Ballarat Historic Photographs:" + String.valueOf(resultList.size()));
 
 		return result(resultList);
 	}
+	
+	@Transactional(readOnly=true)
+	public Result search(){
+		List<Story> resultList = JPA.em().createQuery("SELECT s FROM Story s where lower(title) like '%"+Form.form().bindFromRequest().get("key")+"%'").getResultList();
+		Logger.info("Search :" + String.valueOf(resultList.size()));
+
+		return result(resultList);
+	}
 
 	private Result result(List<Story> showList) {
 		return ok(views.html.index.render(getStateCount(), getYearCount(), getBallaratCount(), showList));
+	}
+	
+	@Transactional(readOnly=true)
+	public Result apiByState(String state) {
+		return ok(Json.toJson(getStoriesByState(state)));
+	}
+
+	@Transactional(readOnly=true)
+	public Result apiByYear(String year) {
+		return ok(Json.toJson(getStoriesByYear(year)));
+	}
+	
+	@Transactional(readOnly=true)
+	public Result apiByBallaratPhotograph(){
+		List<Story> resultList = JPA.em().createQuery("SELECT s FROM Story s where mediaRSS='BPHOTO'").getResultList();
+		return ok(Json.toJson(resultList));
+	}
+	
+	@Transactional(readOnly=true)
+	public Result apiSearch(String key){
+		List<Story> resultList = JPA.em().createQuery("SELECT s FROM Story s where lower(title) like '%"+key+"%'").getResultList();
+		return ok(Json.toJson(resultList));
 	}
 	
 
