@@ -76,6 +76,10 @@ public class Application extends Controller {
 
 		return result(resultList);
 	}
+	
+	public Result vedio(){
+		return redirect("http://youtu.be/NVsnkYbI8xY");
+	}
 
 	private Result result(List<Story> showList) {
 		return ok(views.html.index.render(getStateCount(), getYearCount(), getBallaratCount(), showList));
