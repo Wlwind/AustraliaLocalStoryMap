@@ -69,7 +69,9 @@ public class Application extends Controller {
 	
 	@Transactional(readOnly=true)
 	public Result search(){
-		List<Story> resultList = JPA.em().createQuery("SELECT s FROM Story s where lower(title) like '%"+Form.form().bindFromRequest().get("key")+"%'").getResultList();
+		String key = Form.form().bindFromRequest().get("key");
+		if(key.isEmpty()) key = "NOKEYINSEARCH";
+		List<Story> resultList = JPA.em().createQuery("SELECT s FROM Story s where lower(title) like '%"+key+"%'").getResultList();
 		Logger.info("Search :" + String.valueOf(resultList.size()));
 
 		return result(resultList);
@@ -97,6 +99,7 @@ public class Application extends Controller {
 	
 	@Transactional(readOnly=true)
 	public Result apiSearch(String key){
+		if(key.isEmpty()) key = "NOKEYINSEARCH";
 		List<Story> resultList = JPA.em().createQuery("SELECT s FROM Story s where lower(title) like '%"+key+"%'").getResultList();
 		return ok(Json.toJson(resultList));
 	}
