@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
@@ -101,11 +102,32 @@ public class ImportTools {
 				parser.nextToken();
 				parser.nextToken();
 				String longitude = parser.getText();
-
+				
 				parser.nextToken();
 				parser.nextToken();
 				String mediaRSS = parser.getText();
-
+				
+				if (latitude.isEmpty() && longitude.isEmpty())
+					continue;
+				
+				Statement cooridinate = conn.createStatement();
+				ResultSet resultSet = cooridinate.executeQuery("SELECT id From story where latitude = '"+latitude+"' and longitude = '"+longitude+"'");
+				
+				while(resultSet.next()){
+					int id = resultSet.getInt(1);
+					
+					Double tempLatitude = Double.valueOf(latitude);
+					tempLatitude += Math.random()/100;
+					
+					Double tempLongitude = Double.valueOf(longitude);
+					tempLongitude += Math.random()/100;
+					
+					Statement updatestat = conn.createStatement();
+					updatestat.executeUpdate("UPDATE story set latitude = '"+tempLatitude+"', longitude = '"+tempLongitude+"' where id = "+id);
+					updatestat.close();
+				}
+				cooridinate.close();
+				
 				PreparedStatement stm = conn.prepareStatement("insert into story(id," + " title," + " url,"
 						+ " localDate," + " primaryImage," + " primaryImageCaption," + " primaryImageRightsInformation,"
 						+ " subjects," + " station," + " state," + " place," + " keywords," + " latitude,"
@@ -127,11 +149,12 @@ public class ImportTools {
 				stm.setString(14, longitude);
 				stm.setString(15, mediaRSS);
 
-				if (!latitude.isEmpty() && !longitude.isEmpty())
-					stm.execute();
+				
+				stm.execute();
 				stm.close();
 			}
 		}
+		
 		
 		// Ballarat photographs data
 		
